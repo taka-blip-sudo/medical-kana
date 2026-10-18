@@ -1,0 +1,18 @@
+{
+  "base.txt": 78956,
+  "practical.txt": 79845,
+  "single_kana_search_ms_on_build_PC": 2.59,
+  "prefix_query_plan": [
+    [
+      2,
+      0,
+      155,
+      "SEARCH entries USING PRIMARY KEY (reading>? AND reading<?)"
+    ]
+  ],
+  "total_entries": 158801,
+  "unique_words": 157078,
+  "database_bytes": 10395648,
+  "validation": "SQLite integrity, exact and prefix search, exclusion of practical terms by default; passed",
+  "iOS_compilation_and_device_testing": "Not run: macOS/Xcode and iPhone are not available in this environment"
+}

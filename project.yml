@@ -1,0 +1,64 @@
+name: MedKey
+options:
+  bundleIdPrefix: org.medkey.local
+  deploymentTarget:
+    iOS: '16.0'
+settings:
+  base:
+    SWIFT_VERSION: '5.0'
+    TARGETED_DEVICE_FAMILY: '1,2'
+    MARKETING_VERSION: '0.1.0'
+    CURRENT_PROJECT_VERSION: '1'
+targets:
+  MedKey:
+    type: application
+    platform: iOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.medkey.local.MedKey
+    sources:
+      - App
+      - Shared
+      - path: Resources
+        buildPhase: resources
+    info:
+      path: Generated/App-Info.plist
+      properties:
+        CFBundleDisplayName: 医療かな
+        UILaunchScreen: {}
+    dependencies:
+      - target: MedKeyKeyboard
+        embed: true
+      - sdk: libsqlite3.tbd
+  MedKeyKeyboard:
+    type: app-extension
+    platform: iOS
+    sources:
+      - Keyboard
+      - Shared
+      - path: Resources
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: org.medkey.local.MedKey.Keyboard
+        APPLICATION_EXTENSION_API_ONLY: YES
+        SKIP_INSTALL: YES
+    info:
+      path: Generated/Keyboard-Info.plist
+      properties:
+        CFBundleDisplayName: 医療かな
+        NSExtension:
+          NSExtensionPointIdentifier: com.apple.keyboard-service
+          NSExtensionPrincipalClass: $(PRODUCT_MODULE_NAME).KeyboardViewController
+          NSExtensionAttributes:
+            IsASCIICapable: false
+            PrimaryLanguage: ja-JP
+            RequestsOpenAccess: false
+            PrefersRightToLeft: false
+    dependencies:
+      - sdk: libsqlite3.tbd
+schemes:
+  MedKey:
+    build:
+      targets:
+        MedKey: all
