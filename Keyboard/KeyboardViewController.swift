@@ -79,13 +79,13 @@ final class KeyboardViewController: UIInputViewController {
             ] {
                 row(groups.map { values in
                     let key = KanaKey(values)
-                    key.selected = { [weak self] value in self?.append(value) }
+                    key.onKanaSelected = { [weak self] value in self?.append(value) }
                     return key
                 })
             }
         }
         let wa = KanaKey(["わ","を","ん","ー","〜"])
-        wa.selected = { [weak self] in self?.append($0) }
+        wa.onKanaSelected = { [weak self] in self?.append($0) }
         row([
             action("゛゜小") { [weak self] in self?.modifyLast() },
             wa,
