@@ -3,12 +3,16 @@ options:
   bundleIdPrefix: org.medkey.local
   deploymentTarget:
     iOS: '16.0'
+packages:
+  AzooKeyKanaKanjiConverter:
+    url: https://github.com/azooKey/AzooKeyKanaKanjiConverter
+    exactVersion: 0.11.2
 settings:
   base:
     SWIFT_VERSION: '5.0'
     TARGETED_DEVICE_FAMILY: '1,2'
-    MARKETING_VERSION: '0.1.1'
-    CURRENT_PROJECT_VERSION: '2'
+    MARKETING_VERSION: '0.2.0'
+    CURRENT_PROJECT_VERSION: '3'
 targets:
   MedKey:
     type: application
@@ -59,8 +63,30 @@ targets:
             PrefersRightToLeft: false
     dependencies:
       - sdk: libsqlite3.tbd
+      - package: AzooKeyKanaKanjiConverter
+        product: KanaKanjiConverterModuleWithDefaultDictionary
+  MedKeyTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - Tests
+      - Keyboard
+      - Shared
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/MedKey.app/MedKey
+        BUNDLE_LOADER: $(TEST_HOST)
+    dependencies:
+      - target: MedKey
+      - sdk: libsqlite3.tbd
+      - package: AzooKeyKanaKanjiConverter
+        product: KanaKanjiConverterModuleWithDefaultDictionary
 schemes:
   MedKey:
     build:
       targets:
         MedKey: all
+    test:
+      targets:
+        - MedKeyTests
