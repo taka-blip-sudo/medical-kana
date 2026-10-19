@@ -12,20 +12,41 @@ jobs:
       - name: Install project generator
         run: brew install xcodegen
       - name: Generate project
-        run: xcodegen generate
+        run: |
+          touch Resources/ThirdPartyNotices.txt
+          xcodegen generate
+      - name: Resolve conversion engine and collect licenses
+        run: |
+          xcodebuild -resolvePackageDependencies -project MedKey.xcodeproj -scheme MedKey -clonedSourcePackagesDirPath .packages
+          python3 - <<'PY'
+          from pathlib import Path
+          root = Path('.packages/checkouts')
+          notices = ['MedKey uses AzooKeyKanaKanjiConverter v0.11.2 and its default dictionary.\nhttps://github.com/azooKey/AzooKeyKanaKanjiConverter\nThe upstream source is unmodified.\n']
+          for path in sorted(root.rglob('*')):
+              if path.is_file() and any(path.name.lower().startswith(name) for name in ('license', 'licence', 'copying', 'notice', 'authors', 'readme')):
+                  notices.append('\n===== ' + str(path.relative_to(root)) + ' =====\n' + path.read_text(errors='replace'))
+          assert len(notices) > 5, 'Dependency licenses were not found'
+          Path('Resources/ThirdPartyNotices.txt').write_text('\n'.join(notices))
+          PY
       - name: Build for simulator
         run: >-
           xcodebuild -project MedKey.xcodeproj -scheme MedKey
           -configuration Debug -sdk iphonesimulator
           -destination 'generic/platform=iOS Simulator'
           -derivedDataPath build-simulator
+          -clonedSourcePackagesDirPath .packages
           CODE_SIGNING_ALLOWED=NO build
+      - name: Test everyday conversion and kana layout
+        run: |
+          SIMULATOR_ID=$(xcrun simctl list devices available --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(x["udid"] for group in reversed(list(d["devices"].values())) for x in group if x["name"].startswith("iPhone")))')
+          xcodebuild -project MedKey.xcodeproj -scheme MedKey -configuration Debug -destination "platform=iOS Simulator,id=$SIMULATOR_ID" -derivedDataPath build-simulator -clonedSourcePackagesDirPath .packages -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO test
       - name: Build for iPhone without signing
         run: >-
           xcodebuild -project MedKey.xcodeproj -scheme MedKey
           -configuration Release -sdk iphoneos
           -destination 'generic/platform=iOS'
           -derivedDataPath build-device
+          -clonedSourcePackagesDirPath .packages
           CODE_SIGNING_ALLOWED=NO build
       - name: Package for personal signing
         run: |
@@ -37,4 +58,10 @@ jobs:
         with:
           name: MedKey-unsigned-IPA
           path: MedKey-unsigned.ipa
+          retention-days: 3
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: MedKey-test-results
+          path: TestResults.xcresult
           retention-days: 3
