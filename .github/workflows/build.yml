@@ -50,6 +50,18 @@ jobs:
           CODE_SIGNING_ALLOWED=NO build
       - name: Package for personal signing
         run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import plistlib
+          app = Path('build-device/Build/Products/Release-iphoneos/MedKey.app')
+          keyboard = next(app.glob('PlugIns/*.appex'))
+          for bundle in (app, keyboard):
+              info = plistlib.loads((bundle / 'Info.plist').read_bytes())
+              assert info['CFBundleDisplayName'].isascii(), 'AltStore requires an ASCII app name'
+              assert (bundle / 'medical.sqlite').is_file(), 'Medical dictionary missing'
+          assert any(keyboard.rglob('Dictionary')), 'General Japanese dictionary missing from keyboard extension'
+          assert (app / 'ThirdPartyNotices.txt').stat().st_size > 1000
+          PY
           mkdir -p Package/Payload
           cp -R build-device/Build/Products/Release-iphoneos/MedKey.app Package/Payload/
           cd Package
