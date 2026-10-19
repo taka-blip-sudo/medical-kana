@@ -32,11 +32,11 @@ final class HomeViewController: UIViewController, UISearchBarDelegate {
             stack.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10)
         ])
         let guide = UILabel(); guide.numberOfLines = 0; guide.font = .systemFont(ofSize: 16)
-        guide.text = "設定 → 一般 → キーボード → キーボード → 新しいキーボードを追加 → 医療かな\n\n入力欄の地球儀で切り替えます。フルアクセスは不要です。まずメモアプリで試してください。医療用語の候補選択に特化した試作版です。"
+        guide.text = "設定 → 一般 → キーボード → キーボード → 新しいキーボードを追加 → MedKey Keyboard\n\n入力欄の地球儀で切り替えます。フルアクセスは不要です。日本語かな配列でフリック入力し、日常語・文章・医療用語の候補を選べます。"
         stack.addArrangedSubview(guide)
         let notice = UILabel(); notice.numberOfLines = 0; notice.font = .systemFont(ofSize: 13)
         notice.textColor = .secondaryLabel
-        notice.text = "一般文の自動変換・学習は未対応です。パスワード欄などでは標準キーボードになります。病院のシステムでは利用を制限される場合があります。"
+        notice.text = "一般文の変換はazooKeyの変換エンジンを使用します。Apple標準と同じ変換エンジンではありません。入力は端末内で処理します。パスワード欄などでは標準キーボードになります。"
         stack.addArrangedSubview(notice)
         searchBar.placeholder = "読みを入力して辞書を試す（例：ちるぜぱちど）"
         searchBar.delegate = self; stack.addArrangedSubview(searchBar)
@@ -56,7 +56,7 @@ final class HomeViewController: UIViewController, UISearchBarDelegate {
     @objc private func licenses() {
         let controller = UIViewController(); controller.title = "出典と利用条件"
         let text = UITextView(); text.isEditable = false; text.font = .systemFont(ofSize: 14)
-        let names = ["NOTICE", "GPL-2.0", "CC-BY-4.0"]
+        let names = ["NOTICE", "GPL-2.0", "CC-BY-4.0", "ThirdPartyNotices"]
         text.text = names.compactMap { name in
             guard let url = Bundle.main.url(forResource: name, withExtension: "txt") else { return nil }
             return try? String(contentsOf: url, encoding: .utf8)
