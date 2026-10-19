@@ -148,9 +148,13 @@ final class KeyboardViewController: UIInputViewController {
             if self.reading.isEmpty { self.textDocumentProxy.insertText("\n") } else { self.commit() }
         }
         returnButton = enter
-        column([del, button("空白") { [weak self] in guard let self else { return }
+        let space = button("空白") { [weak self] in guard let self else { return }
             if self.reading.isEmpty { self.textDocumentProxy.insertText(" ") } else { self.choose(self.words.first ?? self.reading) }
-        }, enter, button("→") { [weak self] in self?.commit(); self?.textDocumentProxy.adjustTextPosition(byCharacterOffset: 1) }])
+        }
+        let right = UIStackView(arrangedSubviews: [del, space, enter]); right.axis = .vertical; right.spacing = 7
+        del.heightAnchor.constraint(equalTo: space.heightAnchor).isActive = true
+        enter.heightAnchor.constraint(equalTo: del.heightAnchor, multiplier: 2, constant: 7).isActive = true
+        keys.addArrangedSubview(right)
     }
     private func backspace() {
         lastWord = ""
