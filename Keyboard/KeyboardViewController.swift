@@ -18,7 +18,9 @@ final class JapaneseConversion {
     func candidates(for reading: String) -> [String] {
         guard !reading.isEmpty else { return [] }
         var text = ComposingText(); text.insertAtCursorPosition(reading, inputStyle: .direct)
-        let ordinary = converter.requestCandidates(text, options: options).mainResults
+        // mainResults also contains first-clause-only entries. This UI commits
+        // the whole reading, so omit partial entries rather than dropping its tail.
+        let ordinary = converter.requestCandidates(text, options: options).mainResults.filter { $0.rubyCount >= reading.count }
         byText.removeAll(keepingCapacity: true)
         for item in ordinary where byText[item.text] == nil { byText[item.text] = item }
         let terms = medical.candidates(for: reading, includePractical: false, limit: 24)
@@ -33,7 +35,9 @@ final class JapaneseConversion {
         return merged.filter { !$0.isEmpty && seen.insert($0).inserted }
     }
     func complete(_ word: String?) {
-        if let word, let candidate = byText[word] { converter.updateLearningData(candidate) }
+        if let word, let candidate = byText[word] {
+            converter.updateLearningData(candidate); converter.commitUpdateLearningData()
+        }
         converter.stopComposition(); byText.removeAll(keepingCapacity: true)
     }
 }
