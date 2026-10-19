@@ -37,9 +37,14 @@ jobs:
           -clonedSourcePackagesDirPath .packages
           CODE_SIGNING_ALLOWED=NO build
       - name: Test everyday conversion and kana layout
+        timeout-minutes: 8
         run: |
-          SIMULATOR_ID=$(xcrun simctl list devices available --json | python3 -c 'import json,sys; d=json.load(sys.stdin); print(next(x["udid"] for group in reversed(list(d["devices"].values())) for x in group if x["name"].startswith("iPhone")))')
-          xcodebuild -project MedKey.xcodeproj -scheme MedKey -configuration Debug -destination "platform=iOS Simulator,id=$SIMULATOR_ID" -derivedDataPath build-simulator -clonedSourcePackagesDirPath .packages -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO test
+          SIMULATOR_SDK=$(xcrun --sdk iphonesimulator --show-sdk-version)
+          export SIMULATOR_SDK
+          SIMULATOR_ID=$(xcrun simctl list devices available --json | python3 -c 'import json,sys,os; d=json.load(sys.stdin); suffix=".iOS-"+os.environ["SIMULATOR_SDK"].replace(".","-"); print(next(x["udid"] for runtime,group in d["devices"].items() if runtime.endswith(suffix) for x in group if x["name"].startswith("iPhone")))')
+          xcrun simctl boot "$SIMULATOR_ID" || true
+          xcrun simctl bootstatus "$SIMULATOR_ID" -b
+          xcodebuild -project MedKey.xcodeproj -scheme MedKey -configuration Debug -destination "platform=iOS Simulator,id=$SIMULATOR_ID" -parallel-testing-enabled NO -destination-timeout 60 -derivedDataPath build-simulator -clonedSourcePackagesDirPath .packages -resultBundlePath TestResults.xcresult CODE_SIGNING_ALLOWED=NO test
       - name: Build for iPhone without signing
         run: >-
           xcodebuild -project MedKey.xcodeproj -scheme MedKey
